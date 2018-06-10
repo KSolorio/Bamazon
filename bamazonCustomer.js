@@ -2,15 +2,15 @@ require ('dotenv').config()
 
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var Table = require('cli-table');
+var colors = require('colors');
 
 //connecting to mysql
 var connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
-
   //username
   user: "root",
-
   // Your password
   password: process.env.password,
   database: "bamazon"
@@ -18,61 +18,102 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
   if (err) throw err;
-  displayItems();
+  displayTable();
 });
 
-function displayItems() {
-  connection.query("SELECT * FROM products", function(err, products) {
-    console.log("Karina's Makeup Shop: \n")
-    for(var i = 0; i< products.length; i++) {
-      console.log ( 
-        products[i].item_id + " | " + 
-        products[i].product_name.charAt(0).toUpperCase() + products[i].product_name.slice(1) +
-        "\nPrice: $" + products[i].price + "\n"   
-      );
-    }
-    runSearch()
-    }) 
-}
+//Table settings
+ function displayTable() {
+  
+  var table = new Table({
+    head: ['ID'.green, 'Item Name'.green, 'Dept'.green, 'Price'.green, 'Stock'.green],
+    colWidths: [5, 40, 15, 10, 10]
 
+  });
+  displayInventory();
+
+  function displayInventory() {  
+    connection.query("SELECT * FROM products", function(err, products) {
+      console.log("Welcome to BAMazon: \n")
+      for(var i = 0; i < products.length; i++) {
+        
+        var itemId = products[i].item_id,
+          name = products[i].product_name,
+          dept = products[i].department_name,
+          price = products[i].price,
+          qty = products[i].stock_quantity;
+
+        table.push (
+          [itemId, name, dept, price, qty]
+        );
+      }
+      console.log(table.toString());
+      runSearch();
+    });
+  }
+ }
 function runSearch() {
   inquirer
     .prompt([
       {
         type: "input", 
-        message: "What is the ID of the product you wish to purchase?",
-        name: "item"
+        name: "item",
+        message: "What is the ID of the product you wish to purchase?".green
       },
       {
         type: "input", 
-        message: "How many would you like to puchase?",
         name: "quantity",
+        message: "How many would you like to puchase?".green
       },
-      // {
-      //   type: "confirm", 
-      //   message: "Would you like to purchase another item?", 
-      //   name: "confirm",
-      //   default: true
-      // }
     ])
     .then(function(answers) {
-      var qurey = connection.query(
-        "UPDATE products SET stock_quantity = stock_quantity - ? WHERE item_id = ?", 
-        [answers.quantity, answers.item],
-        function (err, res){
-        console.log(res);
+      connection.query(
+      "SELECT * FROM products WHERE item_id =?", answers.item, function(err, products){
+        for(var i = 0; i < products.length; i++) {
+          if (answers.quantity > products[i].stock_quantity) {
+            console.log("Sorry! Not enough stock to complete your order. Please try again".red);
+            runSearch();
+          } else {
+            console.log(
+              "       Your Receipt".rainbow +
+            "\n=========== :) ===========")
+            console.log(
+              "- Item chosen: ".cyan + products[i].product_name +
+              "\n" +
+              "\n- Quantity: ".cyan + answers.quantity +
+              "\n" +
+              "\n- Total: ".cyan + "$" + products[i].price * answers.quantity +
+              "\n=========================="
+            );
+            var updatedInv = (products[i].stock_quantity - answers.quanity);
+            var purchased = (answers.item);
+            confirm(updatedInv, purchased)
+          }  
         }
-
-      );
-
-      // var item = answers.item;
-      // var quantity = answers.quantity;
-      // console.log(
-      // "\nYOUR RECEIPT" +
-      // "\nItem: " + item +
-      // "\nQuantity: " + quantity +
-      // "\nYour Total = $" )
-      
-
+      })
     })
-};
+}
+  function confirm(updatedInv, purchased) {
+    inquirer
+    .prompt([
+      {
+        type:"confirm", 
+        name: "confirm", 
+        message: "Would you like to proceed to checkout?".green,
+        default: true
+      }
+    ]).then(function(confirmation){
+      if (confirmation.confirm === true) {
+        connection.query("UPDATE products SET ? WEHRE ?", [{
+          stock_quantity: updatedInv
+        }, {
+          item_id: purchased
+        }], function(err, res) {});
+
+        console.log("Thank You for your business! Come again soon".rainbow)
+        runSearch();
+      } else {
+        console.log("So sorry! Come again soon".red)
+        runSearch();
+      }
+    })
+  }
