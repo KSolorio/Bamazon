@@ -33,12 +33,16 @@ Then you are asked to specify an amount for the purchase
 
 ![Quantity](./images/quantity.png)
 
-If there isn't enough invetory you will receive an alert in red
+If there isn't enough invetory you will receive an alert in red.
+The program will then start all over.
 
 ![Not Enough Inventory](./images/sorry.png)
 
+If there is enough inventory you will receive a receipt
 
+![Receipt](./images/receipt.png) 
+
+They MySQL table will update and the program will restart with the updated inventory
 
 ![Mysql table #2](./images/updatedMysql.png)
 ![Updated table in terminal](./images/updatedTable.png)
-![Your cart](./images/yourCart.png)

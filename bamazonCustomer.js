@@ -87,7 +87,7 @@ function start() {
 
         } else {
           console.log(
-            "       Your Cart".rainbow +
+            "       Your Receipt".rainbow +
             "\n=========== :) ===========")
             console.log(
               "- Item chosen: ".cyan + res[chosenId].product_name +
@@ -110,4 +110,4 @@ function start() {
        });
    })
  }
-start();
+start(); 
