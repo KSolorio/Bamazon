@@ -25,8 +25,20 @@ Bamazon Table
 
 ![Welcom to bamazon table](./images/displayTable.png)
 
-![Not enough inventory](./images/error.png)
+Next It will prompt you to chose a product ID
+
+![First Prompt](./images/prompt1.png)
+
+Then you are asked to specify an amount for the purchase
+
+![Quantity](./images/quantity.png)
+
+If there isn't enough invetory you will receive an alert in red
+
+![Not Enough Inventory](./images/sorry.png)
+
+
+
 ![Mysql table #2](./images/updatedMysql.png)
 ![Updated table in terminal](./images/updatedTable.png)
-![Welcome to bamazon with terminal ](./images/welcome.png)
 ![Your cart](./images/yourCart.png)
